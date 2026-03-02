@@ -1,0 +1,131 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "536a2986-44b0-4091-ac8e-96dd6e0eacd2",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.preprocessing import LabelEncoder, StandardScaler\n",
+    "from sklearn.pipeline import Pipeline\n",
+    "from sklearn.compose import ColumnTransformer\n",
+    "from sklearn.metrics import r2_score, mean_absolute_error\n",
+    "\n",
+    "from sklearn.linear_model import LinearRegression\n",
+    "\n",
+    "df = pd.read_csv(r\"C:\\Users\\jessi\\Downloads\\cleaned_fw_dataset.csv\")\n",
+    "df.head()\n",
+    "\n",
+    "df['Date_Received'] = pd.to_datetime(df['Date_Received'])\n",
+    "df['Expiration_Date'] = pd.to_datetime(df['Expiration_Date'])\n",
+    "\n",
+    "df['days_to_expire'] = (df['Expiration_Date'] - df['Date_Received']).dt.days\n",
+    "\n",
+    "df = df.drop(['Product_Name','Date_Received','Expiration_Date'], axis=1)\n",
+    "\n",
+    "X = df.drop(\"Food_Waste_kg\", axis=1)\n",
+    "y = df[\"Food_Waste_kg\"]\n",
+    "\n",
+    "categorical_cols = ['Category']\n",
+    "numeric_cols = X.select_dtypes(include=np.number).columns\n",
+    "\n",
+    "preprocessor = ColumnTransformer(\n",
+    "    transformers=[\n",
+    "        ('cat', LabelEncoder(), 'Category'),\n",
+    "        ('num', StandardScaler(), numeric_cols)\n",
+    "    ],\n",
+    "    remainder='passthrough'\n",
+    ")\n",
+    "\n",
+    "from sklearn.preprocessing import OneHotEncoder\n",
+    "\n",
+    "preprocessor = ColumnTransformer(\n",
+    "    transformers=[\n",
+    "        ('cat', OneHotEncoder(), categorical_cols),\n",
+    "        ('num', StandardScaler(), numeric_cols)\n",
+    "    ])\n",
+    "\n",
+    "X_train, X_test, y_train, y_test = train_test_split(\n",
+    "    X, y, test_size=0.2, random_state=42)\n",
+    "\n",
+    "models = {\n",
+    "    \"Linear Regression\": LinearRegression(),\n",
+    "\n",
+    "}"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "6932a8cd-ec57-4dfa-9ae2-f4b761c86f90",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "R2 Score: 0.46493230763826465\n",
+      "Mean Absolute Error: 8.329463778459715\n",
+      "Root Mean Squared Error: 11.468056087879456\n"
+     ]
+    }
+   ],
+   "source": [
+    "from sklearn.pipeline import Pipeline\n",
+    "from sklearn.metrics import mean_squared_error\n",
+    "import numpy as np\n",
+    "\n",
+    "model = Pipeline(steps=[\n",
+    "    ('preprocessor', preprocessor),\n",
+    "    ('regressor', LinearRegression())\n",
+    "])\n",
+    "\n",
+    "model.fit(X_train, y_train)\n",
+    "\n",
+    "y_pred = model.predict(X_test)\n",
+    "\n",
+    "r2 = r2_score(y_test, y_pred)\n",
+    "mae = mean_absolute_error(y_test, y_pred)\n",
+    "rmse = np.sqrt(mean_squared_error(y_test, y_pred))\n",
+    "\n",
+    "print(\"R2 Score:\", r2)\n",
+    "print(\"Mean Absolute Error:\", mae)\n",
+    "print(\"Root Mean Squared Error:\", rmse)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "32a45569-f3b9-413f-9706-756b1fca73c0",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.13.9"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
