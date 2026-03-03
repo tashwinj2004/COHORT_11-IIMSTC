@@ -1,0 +1,50 @@
+import pandas as pd
+import numpy as np
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.metrics import r2_score, mean_absolute_error
+
+from sklearn.neighbors import KNeighborsRegressor
+
+df = pd.read_csv("cleaned_fw_dataset.csv")
+df.head()
+
+df['Date_Received'] = pd.to_datetime(df['Date_Received'])
+df['Expiration_Date'] = pd.to_datetime(df['Expiration_Date'])
+
+df['days_to_expire'] = (df['Expiration_Date'] - df['Date_Received']).dt.days
+
+df = df.drop(['Product_Name','Date_Received','Expiration_Date'], axis=1)
+
+X = df.drop("Food_Waste_kg", axis=1)
+y = df["Food_Waste_kg"]
+
+categorical_cols = ['Category']
+numeric_cols = X.select_dtypes(include=np.number).columns
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('cat', LabelEncoder(), 'Category'),
+        ('num', StandardScaler(), numeric_cols)
+    ],
+    remainder='passthrough'
+)
+
+from sklearn.preprocessing import OneHotEncoder
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('cat', OneHotEncoder(), categorical_cols),
+        ('num', StandardScaler(), numeric_cols)
+    ])
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
+
+models = {
+    "KNN": KNeighborsRegressor()
+
+}
